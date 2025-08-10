@@ -57,3 +57,10 @@ type Rewcache @entity {
     underlying_token_address: String!
     underlying_token_decimals: Int!
 }
+
+type Feecache @entity {
+    id: ID!
+    market: string!
+    amount: BigInt!
+    timeStamp: Int!
+}

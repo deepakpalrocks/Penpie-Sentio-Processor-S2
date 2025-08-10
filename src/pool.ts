@@ -1,5 +1,5 @@
 import { EthContext } from '@sentio/sdk/eth';
-import { Rewcache, Pools, PoolSnapshot } from './schema/schema.js';
+import { Rewcache, Feecache, Pools, PoolSnapshot } from './schema/schema.js';
 import { getStandardizedYieldContractOnContext } from './types/eth/standardizedyield.js';
 import { getPendleMarketContractOnContext } from './types/eth/pendlemarket.js';
 
@@ -7,7 +7,7 @@ import { getERC20ContractOnContext } from '@sentio/sdk/eth/builtin/erc20';
 import { CHAIN_ID,PENPIE_STAKING_ADDRESS } from './consts.js';
 import { getDateInfo } from './helper.js';
 
-export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Rewcache) {
+export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Rewcache, feecache: Feecache) {
   const { d, blockDate } = getDateInfo(ctx);
   const sy = getStandardizedYieldContractOnContext(ctx, rewcache.SY);
   const id = `${rewcache.rewardPool.toLowerCase()}-${d}`;

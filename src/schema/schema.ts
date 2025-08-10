@@ -266,6 +266,30 @@ export class Rewcache extends AbstractEntity  {
 }
 
 
+interface FeecacheConstructorInput {
+  id: ID;
+  amount: BigInt;
+  timeStamp: Int;
+}
+@Entity("Feecache")
+export class Feecache extends AbstractEntity  {
+
+	@Required
+	@Column("ID")
+	id: ID
+
+	@Required
+	@Column("BigInt")
+	amount: BigInt
+
+	@Required
+	@Column("Int")
+	timeStamp: Int
+  constructor(data: FeecacheConstructorInput) {super()}
+  
+}
+
+
 const source = `type Pools @entity {
     id: ID!
     chain_id: Int!
@@ -324,7 +348,14 @@ type Rewcache @entity {
 
     underlying_token_address: String!
     underlying_token_decimals: Int!
-}`
+}
+
+type Feecache @entity {
+    id: ID!
+    amount: BigInt!
+    timeStamp: Int!
+}
+`
 DatabaseSchema.register({
   source,
   entities: {
@@ -332,6 +363,7 @@ DatabaseSchema.register({
 		"PoolSnapshot": PoolSnapshot,
 		"PositionSnapshot": PositionSnapshot,
 		"RewardPoolUser": RewardPoolUser,
-		"Rewcache": Rewcache
+		"Rewcache": Rewcache,
+		"Feecache": Feecache
   }
 })
