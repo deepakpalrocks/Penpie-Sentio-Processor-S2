@@ -6,8 +6,9 @@ import { getPendleMarketContractOnContext } from './types/eth/pendlemarket.js';
 import { getERC20ContractOnContext } from '@sentio/sdk/eth/builtin/erc20';
 import { CHAIN_ID,PENPIE_STAKING_ADDRESS } from './consts.js';
 import { getDateInfo } from './helper.js';
+import { BigDecimal } from '@sentio/sdk';
 
-export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Rewcache, feecache: Feecache) {
+export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Rewcache, feecache: Feecache[]) {
   const { d, blockDate } = getDateInfo(ctx);
   const sy = getStandardizedYieldContractOnContext(ctx, rewcache.SY);
   const id = `${rewcache.rewardPool.toLowerCase()}-${d}`;
@@ -15,6 +16,15 @@ export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Re
   if (await ctx.store.get(PoolSnapshot, id)) {
     return;
   }
+
+  const rewardsDecimals = 18;
+  const totalAmount = feecache.reduce(
+  (sum, entry) => sum + entry.amount, 0n)
+
+  const totalBD = BigDecimal(totalAmount.toString());
+  const divisor = BigDecimal(10).pow(rewardsDecimals);
+  const totalRewardsFormatted = totalBD.div(divisor)
+  const totalFeeRounded = Number((Number(totalRewardsFormatted.toString())).toFixed(2));
 
   const yieldToken = getERC20ContractOnContext(ctx, rewcache.underlying_token_address);
   const decimals = rewcache.underlying_token_decimals;
@@ -34,6 +44,7 @@ export async function createPoolSnapshotIfNotExist(ctx: EthContext, rewcache: Re
     underlying_token_index: 0,
     pool_address: rewcache.rewardPool,
     underlying_token_amount: amount.toNumber(),
+    total_fees_usd: totalFeeRounded,
   });
 
   await ctx.store.upsert(entity);

@@ -60,7 +60,7 @@ type Rewcache @entity {
 
 type Feecache @entity {
     id: ID!
-    market: string!
+    market: String!
     amount: BigInt!
     timeStamp: Int!
 }

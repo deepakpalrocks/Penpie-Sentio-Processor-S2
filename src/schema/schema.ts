@@ -268,6 +268,7 @@ export class Rewcache extends AbstractEntity  {
 
 interface FeecacheConstructorInput {
   id: ID;
+  market: String;
   amount: BigInt;
   timeStamp: Int;
 }
@@ -277,6 +278,10 @@ export class Feecache extends AbstractEntity  {
 	@Required
 	@Column("ID")
 	id: ID
+
+	@Required
+	@Column("String")
+	market: String
 
 	@Required
 	@Column("BigInt")
@@ -352,6 +357,7 @@ type Rewcache @entity {
 
 type Feecache @entity {
     id: ID!
+    market: String!
     amount: BigInt!
     timeStamp: Int!
 }

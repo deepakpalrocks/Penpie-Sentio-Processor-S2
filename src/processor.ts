@@ -74,6 +74,7 @@ PenpieStakingProcessor.bind({
   let feeValueCounted = 0;
   let feeIdx = 0;
   let isFeeTransferEvent = false;
+  let feeAmount = 0n;
   while(feeValueCounted < Number(totalFeeValue.toString())) {
     const feeInfo = await penpieStaking.pendleFeeInfos(feeIdx++);
 
@@ -85,7 +86,7 @@ PenpieStakingProcessor.bind({
   }
 
   if(isFeeTransferEvent) {
-    createFeeCache(ctx, marketAddress, rewardAmount);
+    createFeeCache(ctx, marketAddress, rewardAmount, rewardReciever);
   }
 
 });
@@ -117,7 +118,15 @@ const PenpieReceiptTemplate = new PenpieReceiptTokenProcessorTemplate().onEventT
 const PenpiePoolTemplate = new PenpieReceiptTokenProcessorTemplate().onTimeInterval(
   async (_, ctx) => {
     let rewcache = (await ctx.store.get(Rewcache, ctx.address.toLowerCase()))!;
-    let feecache = (await ctx.store.get(Feecache, ctx.address.toLowerCase()))!;
+    // let feecache = (await ctx.store.get(Feecache, ctx.address.toLowerCase()))!;
+
+    const previousDayTimeStamp = Math.floor(ctx.timestamp.getTime() / 1000) - 24 * 60 * 60
+
+    const feecache = await ctx.store.list(Feecache, [
+      { field: "market", op: "=", value: rewcache.LP.toLowerCase() },
+      { field: "timeStamp", op: ">=", value: previousDayTimeStamp },
+    ]);
+
     await createPoolSnapshotIfNotExist(ctx, rewcache, feecache);
 
     const rc: UserPositionRaw = {};
@@ -151,15 +160,17 @@ const PenpiePoolTemplate = new PenpieReceiptTokenProcessorTemplate().onTimeInter
 async function createFeeCache(
   ctx: EthContext,
   marketAddr: string,
-  feeAmount: bigint
+  feeAmount: bigint,
+  feeReciever: string
 ) {
 
   const feeSentTime = Math.floor(ctx.timestamp.getTime() / 1000);
   await ctx.store.upsert(
     new Feecache({
-      id: `${marketAddr.toLowerCase()}-`,
+      id: `${marketAddr.toLowerCase()}-${feeReciever}- ${feeSentTime}`,
+      market: marketAddr.toLowerCase(),
       amount: feeAmount,
-      timeStamp: Math.floor(ctx.timestamp.getTime() / 1000)
+      timeStamp: feeSentTime
     })
   );
 }
